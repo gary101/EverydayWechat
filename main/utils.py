@@ -65,7 +65,7 @@ def get_diff_time(start_date):
     try:
         start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
         day_delta = (datetime.now() - start_datetime).days
-        delta_msg = '宝贝这是我们在一起的第 {} 天。'.format(day_delta)
+        delta_msg = '☺宝贝这是我们在一起的第 {} 天。'.format(day_delta)
     except Exception as exception:
         print(exception)
         delta_msg = None

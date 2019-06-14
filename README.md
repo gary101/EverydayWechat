@@ -41,7 +41,7 @@
 ### 配置自动回复机器人。
 
 #### 1. 开启自动回复
-将 **is_auto_relay** 设置为：True。
+将 **is_auto_reply** 设置为：True。
 
 #### 2. 配置图灵机器人
 打开图灵机器人官网：[http://www.turingapi.com](http://www.turingapi.com/) 进行注册。  

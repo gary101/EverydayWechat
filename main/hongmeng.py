@@ -52,11 +52,12 @@ def is_online(auto_login=False):
     is_forced_switch = get_yaml().get('is_forced_switch', False)
     for _ in range(2):  # 登陆，尝试 2 次。
         # 如果需要切换微信，删除 hotReload=True
+        # [Gary] 实测此判断不起作用，直接命令行显示二维码更方便！
         if os.environ.get('MODE') == 'server':
             # 命令行显示登录二维码。
             itchat.auto_login(enableCmdQR=2, hotReload=(not is_forced_switch))
         else:
-            itchat.auto_login(hotReload=(not is_forced_switch))
+            itchat.auto_login(enableCmdQR=2, hotReload=(not is_forced_switch))
         if _online():
             print('登录成功')
             return True
@@ -77,6 +78,10 @@ def text_reply(msg):
             reply_text = get_bot_info(receive_text)
             time.sleep(1)  # 休眠一秒，保安全，想更快的，可以直接用。
             if reply_text:  # 如内容不为空，回复消息
+                conf = get_yaml()
+                # 为消息添加自动回复前缀
+                if conf.get('is_auto_prefix', False):
+                    reply_text = '[自动回复] '+ reply_text
                 msg.user.send(reply_text)  # 发送回复
                 print('\n{}发来信息：{}\n回复{}：{}'
                       .format(msg.user.nickName, receive_text, msg.user.nickName, reply_text))
@@ -106,18 +111,18 @@ def get_alarm_msg():
     """ 定时提醒内容 """
     conf = get_yaml()
     for gf in conf.get('girlfriend_infos'):
-        dictum = get_dictum_info(gf.get('dictum_channel'))
-        weather = get_weather_info(gf.get('city_name'))
+        dictum = '【每日一句】 ' + get_dictum_info(gf.get('dictum_channel'))
+        weather = '【今日天气】 ' + get_weather_info(gf.get('city_name')) + '。'
         diff_time = get_diff_time(gf.get('start_date'))
         sweet_words = gf.get('sweet_words')
-        send_msg = '\n'.join(x for x in [dictum, weather, diff_time, sweet_words] if x)
-        print(send_msg)
+        send_msg = '\n\n'.join(x for x in [diff_time,  weather, dictum, sweet_words] if x)
+        # print(send_msg)
         if send_msg and is_online():
             wechat_name = gf.get('wechat_name')
             authors = itchat.search_friends(name=wechat_name)
             if authors:
                 authors[0].send(send_msg)
-                print('\n定时给『{}』发送的内容是:\n{}\n发送成功...\n'.format(wechat_name, send_msg))
+                print('\n定时给『{}』发送的内容是:\n{}\n{}\n{}\n发送成功...\n'.format(wechat_name, '-'*30, send_msg, '-'*30))
             else:
                 print('定时提醒发送失败，微信名 {} 失效。'.format(wechat_name))
 
@@ -154,7 +159,7 @@ def run():
         print('登录失败')
         return
     conf = get_yaml()
-    if conf.get('is_auto_relay', False):
+    if conf.get('is_auto_reply', False):
         def _itchatRun():
             itchat.run()
 
